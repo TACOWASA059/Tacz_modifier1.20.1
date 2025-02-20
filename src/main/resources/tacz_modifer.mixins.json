@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.github.tacowasa059.taczmodifer.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "tacz_modifer.refmap.json",
+  "mixins": [
+
+  ],
+  "client": [
+    "EntityRenderDispatcherMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
