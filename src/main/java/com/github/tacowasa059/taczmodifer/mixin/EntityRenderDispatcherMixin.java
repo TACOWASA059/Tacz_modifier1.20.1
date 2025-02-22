@@ -5,6 +5,7 @@ import com.mojang.math.Axis;
 import com.tacz.guns.api.TimelessAPI;
 import com.tacz.guns.client.model.BedrockAmmoModel;
 import com.tacz.guns.client.renderer.entity.EntityBulletRenderer;
+import com.tacz.guns.client.resource.GunDisplayInstance;
 import com.tacz.guns.client.resource.InternalAssetLoader;
 import com.tacz.guns.client.resource.index.ClientGunIndex;
 import com.tacz.guns.entity.EntityKineticBullet;
@@ -21,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -66,33 +68,33 @@ public abstract class EntityRenderDispatcherMixin {
     @Unique
     private static void GunRender(EntityKineticBullet bullet, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
         ResourceLocation gunId = bullet.getGunId();
-        Optional<ClientGunIndex> optionalClientGunIndex = TimelessAPI.getClientGunIndex(gunId);
-        if (!optionalClientGunIndex.isEmpty()) {
-            Optional var10000 = bullet.getTracerColorOverride();
-            ClientGunIndex var10001 = optionalClientGunIndex.get();
-            Objects.requireNonNull(var10001);
-            float[] tracerColor = (float[])var10000.orElseGet(var10001::getTracerColor);
-            ResourceLocation ammoId = bullet.getAmmoId();
-            TimelessAPI.getClientAmmoIndex(ammoId).ifPresent((ammoIndex) -> {
-                BedrockAmmoModel ammoEntityModel = ammoIndex.getAmmoEntityModel();
-                ResourceLocation textureLocation = ammoIndex.getAmmoEntityTextureLocation();
-                if (ammoEntityModel != null && textureLocation != null) {
-                    poseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot()) - 180.0F));
-                    poseStack.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot())));
-                    poseStack.pushPose();
-                    poseStack.translate(0.0, 1.5, 0.0);
-                    poseStack.scale(-1.0F, -1.0F, 1.0F);
-                    ammoEntityModel.render(poseStack, ItemDisplayContext.GROUND, RenderType.entityTranslucentCull(textureLocation), packedLight, OverlayTexture.NO_OVERLAY);
-                    poseStack.popPose();
-                }
+        ResourceLocation gunDisplayId = bullet.getGunDisplayId();
+        Optional<GunDisplayInstance> display = TimelessAPI.getGunDisplay(gunDisplayId, gunId);
+        if (display.isEmpty()) {
+            return;
+        }
+
+        float @Nullable [] tracerColor = bullet.getTracerColorOverride().orElse(display.get().getTracerColor());
+        ResourceLocation ammoId = bullet.getAmmoId();
+        TimelessAPI.getClientAmmoIndex(ammoId).ifPresent(ammoIndex -> {
+            BedrockAmmoModel ammoEntityModel = ammoIndex.getAmmoEntityModel();
+            ResourceLocation textureLocation = ammoIndex.getAmmoEntityTextureLocation();
+            if (ammoEntityModel != null && textureLocation != null) {
+                poseStack.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partialTicks, bullet.yRotO, bullet.getYRot()) - 180.0F));
+                poseStack.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partialTicks, bullet.xRotO, bullet.getXRot())));
+                poseStack.pushPose();
+                poseStack.translate(0.0, 1.5, 0.0);
+                poseStack.scale(-1.0F, -1.0F, 1.0F);
+                ammoEntityModel.render(poseStack, ItemDisplayContext.GROUND, RenderType.entityTranslucentCull(textureLocation), packedLight, OverlayTexture.NO_OVERLAY);
+                poseStack.popPose();
+            }
 
 //                if (bullet.isTracerAmmo()) {
-                float[] actualTracerColor = Objects.requireNonNullElse(tracerColor, ammoIndex.getTracerColor());
-                renderTracerAmmo(bullet, actualTracerColor, partialTicks, poseStack, packedLight);
+            float[] actualTracerColor = Objects.requireNonNullElse(tracerColor, ammoIndex.getTracerColor());
+            renderTracerAmmo(bullet, actualTracerColor, partialTicks, poseStack, packedLight);
 //                }
 
-            });
-        }
+        });
     }
     @Unique
     private static void renderTracerAmmo(EntityKineticBullet bullet, float[] tracerColor, float partialTicks, PoseStack poseStack, int packedLight) {
