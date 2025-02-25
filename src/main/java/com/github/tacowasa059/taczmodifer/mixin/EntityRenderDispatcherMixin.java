@@ -1,3 +1,12 @@
+/*
+ * このファイルは [TACZ] (GPL 3.0) を基に改変されています。
+ *
+ * 改変者: tacowasa_059
+ * 改変日: 2025-02-20
+ *
+ * 本ファイルは GNU General Public License v3.0 (GPL 3.0) に従って配布されます。
+ * ライセンスの詳細については `LICENSE` ファイルを参照してください。
+ */
 package com.github.tacowasa059.taczmodifer.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
