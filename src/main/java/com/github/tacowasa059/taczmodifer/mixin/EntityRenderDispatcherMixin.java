@@ -1,3 +1,13 @@
+/*
+ * このファイルは [TACZ] (GPL 3.0) を基に改変されています。
+ *
+ * 改変者: tacowasa_059
+ * 改変日: 2025-02-22
+ *
+ * 本ファイルは GNU General Public License v3.0 (GPL 3.0) に従って配布されます。
+ * ライセンスの詳細については `LICENSE` ファイルを参照してください。
+ */
+
 package com.github.tacowasa059.taczmodifer.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -7,7 +17,6 @@ import com.tacz.guns.client.model.BedrockAmmoModel;
 import com.tacz.guns.client.renderer.entity.EntityBulletRenderer;
 import com.tacz.guns.client.resource.GunDisplayInstance;
 import com.tacz.guns.client.resource.InternalAssetLoader;
-import com.tacz.guns.client.resource.index.ClientGunIndex;
 import com.tacz.guns.entity.EntityKineticBullet;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
