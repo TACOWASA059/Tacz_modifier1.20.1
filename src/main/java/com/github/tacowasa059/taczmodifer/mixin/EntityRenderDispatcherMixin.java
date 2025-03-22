@@ -2,8 +2,8 @@
  * このファイルは [TACZ] (GPL 3.0) を基に改変されています。
  *
  * 改変者: tacowasa_059
- * 改変日: 2025-02-22
- *
+ * 修正内容:  2025-02-22: KineticBulletのレンダーを追加
+ *           2025-03-22: 一人称視点でレンダーしないように修正
  * 本ファイルは GNU General Public License v3.0 (GPL 3.0) に従って配布されます。
  * ライセンスの詳細については `LICENSE` ファイルを参照してください。
  */
@@ -21,6 +21,7 @@ import com.tacz.guns.entity.EntityKineticBullet;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -49,6 +50,13 @@ public abstract class EntityRenderDispatcherMixin {
     @Inject(method="render",at=@At("HEAD"),cancellable = true)
     public <E extends Entity> void render(E p_114385_, double x, double y, double z, float yaw, float partialTicks, PoseStack poseStack, MultiBufferSource bufferSource, int p_114393_, CallbackInfo ci) {
         if(p_114385_ instanceof EntityKineticBullet bullet){
+            Minecraft mc = Minecraft.getInstance();
+
+            if(mc.player == null) return;
+            if (mc.options.getCameraType().isFirstPerson()) {
+                if(mc.player.equals(bullet.getOwner()))return;
+            }
+
             EntityRenderer<? super E> entityrenderer = this.getRenderer(p_114385_);
 
             try {
@@ -58,7 +66,7 @@ public abstract class EntityRenderDispatcherMixin {
                 double d0 = z + vec3.z();
                 poseStack.pushPose();
                 poseStack.translate(d2, d3, d0);
-                GunRender(bullet, partialTicks, poseStack, bufferSource, p_114393_);
+                tacz_modifer$GunRender(bullet, partialTicks, poseStack, p_114393_);
 
                 poseStack.popPose();
             } catch (Throwable throwable) {
@@ -75,7 +83,7 @@ public abstract class EntityRenderDispatcherMixin {
         }
     }
     @Unique
-    private static void GunRender(EntityKineticBullet bullet, float partialTicks, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
+    private static void tacz_modifer$GunRender(EntityKineticBullet bullet, float partialTicks, PoseStack poseStack, int packedLight) {
         ResourceLocation gunId = bullet.getGunId();
         ResourceLocation gunDisplayId = bullet.getGunDisplayId();
         Optional<GunDisplayInstance> display = TimelessAPI.getGunDisplay(gunDisplayId, gunId);
@@ -98,15 +106,13 @@ public abstract class EntityRenderDispatcherMixin {
                 poseStack.popPose();
             }
 
-//                if (bullet.isTracerAmmo()) {
             float[] actualTracerColor = Objects.requireNonNullElse(tracerColor, ammoIndex.getTracerColor());
-            renderTracerAmmo(bullet, actualTracerColor, partialTicks, poseStack, packedLight);
-//                }
+            tacz_modifer$renderTracerAmmo(bullet, actualTracerColor, partialTicks, poseStack, packedLight);
 
         });
     }
     @Unique
-    private static void renderTracerAmmo(EntityKineticBullet bullet, float[] tracerColor, float partialTicks, PoseStack poseStack, int packedLight) {
+    private static void tacz_modifer$renderTracerAmmo(EntityKineticBullet bullet, float[] tracerColor, float partialTicks, PoseStack poseStack, int packedLight) {
         EntityBulletRenderer.getModel().ifPresent((model) -> {
             Entity shooter = bullet.getOwner();
             if (shooter != null) {

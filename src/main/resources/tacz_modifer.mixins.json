@@ -5,10 +5,11 @@
   "compatibilityLevel": "JAVA_8",
   "refmap": "tacz_modifer.refmap.json",
   "mixins": [
-
   ],
   "client": [
-    "EntityRenderDispatcherMixin"
+    "ClientHitMarkMixin",
+    "EntityRenderDispatcherMixin",
+    "GunSoundInstanceMixin"
   ],
   "injectors": {
     "defaultRequire": 1
